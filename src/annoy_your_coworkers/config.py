@@ -30,3 +30,11 @@ def create_example_config() -> bool:
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
     CONFIG_FILE.write_text(json.dumps(EXAMPLE_CONFIG, indent=2) + "\n")
     return True
+
+
+def set_enabled(enabled: bool) -> None:
+    """Persist the enabled flag to config, preserving other fields."""
+    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+    config = load_config() if CONFIG_FILE.exists() else dict(EXAMPLE_CONFIG)
+    config["enabled"] = enabled
+    CONFIG_FILE.write_text(json.dumps(config, indent=2) + "\n")

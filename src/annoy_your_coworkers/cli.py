@@ -2,7 +2,7 @@ import argparse
 import subprocess
 from pathlib import Path
 
-from .config import CONFIG_FILE, load_config, create_example_config
+from .config import CONFIG_FILE, load_config, create_example_config, set_enabled
 from .matcher import find_match
 
 SHELL_HOOK = """\
@@ -76,8 +76,20 @@ def get_builtin_speaker():
     return None
 
 
+def cmd_on(_args):
+    set_enabled(True)
+    print("annoy-your-coworkers: enabled")
+
+
+def cmd_off(_args):
+    set_enabled(False)
+    print("annoy-your-coworkers: disabled")
+
+
 def cmd_check(args):
     config = load_config()
+    if not config.get("enabled", True):
+        return
     rule = find_match(args.cmd, config.get("rules", []))
     if rule is None:
         return
@@ -121,6 +133,8 @@ def main():
     sub = parser.add_subparsers(dest="command", required=True)
 
     sub.add_parser("install", help="Print shell hook snippet and setup instructions")
+    sub.add_parser("on", help="Enable audio playback")
+    sub.add_parser("off", help="Disable audio playback")
 
     p_check = sub.add_parser("check", help="(Internal) Check command and play audio if matched")
     p_check.add_argument("cmd", help="The command that just ran")
@@ -128,6 +142,10 @@ def main():
     args = parser.parse_args()
     if args.command == "install":
         cmd_install(args)
+    elif args.command == "on":
+        cmd_on(args)
+    elif args.command == "off":
+        cmd_off(args)
     elif args.command == "check":
         cmd_check(args)
 
