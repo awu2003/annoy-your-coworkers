@@ -87,12 +87,15 @@ def cmd_check(args):
 
     builtin = get_builtin_speaker()
     if builtin:
-        # Switch to built-in speakers, play (blocking), then restore previous device
+        # Switch to built-in speakers, crank volume, play (blocking), then restore everything
         cmd = (
-            f'prev=$(SwitchAudioSource -c -t output); '
+            f'prev_device=$(SwitchAudioSource -c -t output); '
+            f'prev_vol=$(osascript -e "output volume of (get volume settings)"); '
             f'SwitchAudioSource -s "{builtin}" -t output >/dev/null 2>&1; '
+            f'osascript -e "set volume output volume 100" >/dev/null 2>&1; '
             f'afplay "{mp3}"; '
-            f'SwitchAudioSource -s "$prev" -t output >/dev/null 2>&1'
+            f'osascript -e "set volume output volume $prev_vol" >/dev/null 2>&1; '
+            f'SwitchAudioSource -s "$prev_device" -t output >/dev/null 2>&1'
         )
         subprocess.Popen(
             cmd,
