@@ -61,6 +61,21 @@ match_type options:
 """)
 
 
+def get_builtin_speaker():
+    """Return the built-in speaker device name, or None if not found."""
+    try:
+        output = subprocess.check_output(
+            ["SwitchAudioSource", "-a", "-t", "output"],
+            stderr=subprocess.DEVNULL,
+        ).decode()
+        for line in output.splitlines():
+            if "Speakers" in line:
+                return line.strip()
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        pass
+    return None
+
+
 def cmd_check(args):
     config = load_config()
     rule = find_match(args.cmd, config.get("rules", []))
@@ -69,12 +84,30 @@ def cmd_check(args):
     mp3 = rule.get("mp3", "")
     if not mp3 or not Path(mp3).exists():
         return
-    subprocess.Popen(
-        ["afplay", mp3],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        start_new_session=True,
-    )
+
+    builtin = get_builtin_speaker()
+    if builtin:
+        # Switch to built-in speakers, play (blocking), then restore previous device
+        cmd = (
+            f'prev=$(SwitchAudioSource -c -t output); '
+            f'SwitchAudioSource -s "{builtin}" -t output >/dev/null 2>&1; '
+            f'afplay "{mp3}"; '
+            f'SwitchAudioSource -s "$prev" -t output >/dev/null 2>&1'
+        )
+        subprocess.Popen(
+            cmd,
+            shell=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+        )
+    else:
+        subprocess.Popen(
+            ["afplay", mp3],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+        )
 
 
 def main():
