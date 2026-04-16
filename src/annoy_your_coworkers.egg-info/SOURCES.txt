@@ -1,0 +1,12 @@
+README.md
+pyproject.toml
+setup.py
+src/annoy_your_coworkers/__init__.py
+src/annoy_your_coworkers/cli.py
+src/annoy_your_coworkers/config.py
+src/annoy_your_coworkers/matcher.py
+src/annoy_your_coworkers.egg-info/PKG-INFO
+src/annoy_your_coworkers.egg-info/SOURCES.txt
+src/annoy_your_coworkers.egg-info/dependency_links.txt
+src/annoy_your_coworkers.egg-info/entry_points.txt
+src/annoy_your_coworkers.egg-info/top_level.txt
